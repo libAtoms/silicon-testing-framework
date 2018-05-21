@@ -1,0 +1,9 @@
+Model Purja-Pan, Test bulk_diamond
+Test run at 2018-05-21 20:52
+
+model file: ../../models/Purja-Pan/model.py
+============================================================
+Traceback (most recent call last):
+  File "run-model-test.py", line 77, in <module>
+    sys.stdout.write(open(model_file).read())
+IOError: [Errno 2] No such file or directory: '../../models/Purja-Pan/model.py'

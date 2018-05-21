@@ -1,0 +1,80 @@
+Model ReaxFF, Test bulk_diamond
+Test run at 2018-05-21 20:50
+
+model file: ../../models/ReaxFF/model.py
+============================================================
+# parameters from AvD e-mail 1/18/2017, as used in
+# Buehler, M.J., van Duin, A.C.T. and Goddard, W.A. (2006) Multiparadigm modeling of dynamical crack propagation in silicon using a reactive force field. Physical Review Letters 96, 095505.
+
+import os
+import sys
+
+try:
+    from ase.calculators.lammpslib import LAMMPSlib
+except:
+    sys.exit("Failed to import lammpslib module")
+
+model_dir = os.path.dirname(__file__)
+
+header=['units real',
+        'atom_style charge',
+        'atom_modify map array sort 0 0']
+
+cmds = ["pair_style reax/c NULL checkqeq no",
+        "pair_coeff * * {}/ffield_APL_2014_SiO Si".format(model_dir)]
+
+try:
+   calculator = LAMMPSlib(lmpcmds = cmds,keep_alive=True,lammps_header=header,atom_types={"Si":1}, lammps_name=os.environ['LAMMPS_NAME'])
+except:
+   raise RuntimeError
+
+no_checkpoint = True
+
+name = 'ReaxFF'
+============================================================
+test file: ../../tests/bulk_diamond/test.py
+============================================================
+# This script defines a test case which computes one or more physical
+# properties with a given model
+#
+# INPUTS:
+#   model.calculator -- an ase.calculator.Calculator instance
+#     this script can assume the calculator is checkpointed.
+#
+# OUTPUTS:
+#   properties -- dictionary of key/value pairs corresponding
+#     to physical quantities computed by this test
+
+# standard ASE structure generation routines
+from ase.lattice.cubic import Diamond
+
+import lattice_cubic
+
+# the current model
+import model
+
+a0 = (20.0*8)**(1.0/3.0) # initial guess at lattice constant, cell will be relaxed below
+
+# set up the a
+bulk = Diamond(symbol='Si', latticeconstant=a0)
+
+(c11, c12, c44, E_vs_V) = lattice_cubic.do_lattice(bulk, elastic=True)
+
+a0 = bulk.cell[0,0] # save lattice constant after relaxation
+
+# dictionary of computed properties - this is output of this test, to
+#   be compared with other models
+properties = {'diamond_a0': a0, 'diamond_c11': c11, 'diamond_c12': c12, 'diamond_c44': c44, 'diamond_bulk_modulus': (c11+2.0*c12)/3.0, 'diamond_E_vs_V': E_vs_V }
+============================================================
+relax_atoms_cell using method lbfgs_precon
+symmetry.prep got symmetry group number 227 , international (Hermann-Mauguin) Fd-3m , Hall F 4d 2 3 -1d
+PreconLBFGS:   0  20:50:51      -36.393628       0.0000       0.0406
+/usr/local/lib/python2.7/site-packages/ase/optimize/precon/precon.py:519: UserWarning: mu (0.000) < 1.0, capping at mu=1.0
+  warnings.warn('mu (%.3f) < 1.0, capping at mu=1.0' % self.mu)
+estimate_mu(): mu=1.0, mu_c=4.937354235343716
+INFO:ase.utils.linesearcharmijo:a1 = 0.243, suff_dec = True
+PreconLBFGS:   1  20:50:51      -36.479182       0.0000       0.0312
+mu_c (-14.927) < 1.0, capping at mu_c=1.0
+estimate_mu(): mu=1.0, mu_c=1.0
+INFO:ase.utils.linesearcharmijo:a1 = 0.322, suff_dec = True
+PreconLBFGS:   2  20:50:51      -36.540920       0.0000       0.0214
